@@ -65,7 +65,7 @@ class SongModel extends \Model\BaseModel
     public function getSongs($data) {
         $sql = "SELECT t.*, a.title AS abjad_name, s.name AS artist_name, s.slug AS artist_slug, s.song_url, s.song_section, 
         g.id AS genre_id, g.title AS genre_name, l.url AS lyric_src_url, l.result AS lyric, l.status AS lyric_status, l.section AS lyric_section,
-        c.url AS chord_src_url, c.result AS chord, c.status AS chord_status, c.section AS chord_section, c.viewed  
+        c.url AS chord_src_url, c.result AS chord, c.status AS chord_status, c.section AS chord_section, c.viewed, c.permalink AS chord_permalink  
         FROM {tablePrefix}ext_song t 
         LEFT JOIN {tablePrefix}ext_song_artists s ON s.id = t.artist_id 
         LEFT JOIN {tablePrefix}ext_song_abjads a ON a.id = s.abjad_id  
@@ -629,7 +629,7 @@ class SongModel extends \Model\BaseModel
                         array_push($artist_chords, $row['artist_slug']);
                     }
                     $items[] = [
-                        'loc' => $url_origin.'/'.$this->buildSongUrl(['path' => 'kord', 'artist' => $row['artist_slug'], 'title' => $row['slug']]), //$url_origin.'/kord/'.$row['artist_slug'].'/'.$row['slug'],
+                        'loc' => $url_origin.'/'.$this->buildSongUrl(['path' => 'chord', 'artist' => $row['artist_slug'], 'title' => $row['slug']]), //$url_origin.'/kord/'.$row['artist_slug'].'/'.$row['slug'],
                         'lastmod' => date("c", strtotime($row['last_chord_update'])),
                         'priority' => ($row['chord_featured'] > 0)? 0.6 : 0.5
                     ];

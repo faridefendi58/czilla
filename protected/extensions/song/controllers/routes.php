@@ -7,7 +7,7 @@ $app->get('/artist/[{name}]', function ($request, $response, $args) {
 $app->get('/lirik/search', function ($request, $response, $args) use ($app) {
     $model = new \ExtensionsModel\SongModel();
     $params = $request->getParams();
-    if ($params['type'] == 'chord' || $params['type'] == 'kord') {
+    if ($params['type'] == 'chord' || $params['type'] == 'chord') {
         return $response->withRedirect('/chord/search?q='.$params['q']);
     }
 
