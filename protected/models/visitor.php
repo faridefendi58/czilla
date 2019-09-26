@@ -284,7 +284,7 @@ class VisitorModel extends \Model\BaseModel
     {
         $sql = "SELECT REPLACE(url, '{kordSeachUrl}', '') AS song_title, COUNT(id) AS counter, created_at 
         FROM {tablePrefix}visitor 
-        WHERE url LIKE '%kord/search?q=%'";
+        WHERE url LIKE '%search?q=%'";
 
         $date_from = date("Y-m-01");
         if (isset($data['date_from'])) {
@@ -308,7 +308,7 @@ class VisitorModel extends \Model\BaseModel
         if (isset($data['limit']))
             $sql .= ' LIMIT '.$data['limit'];
 
-        $sql = str_replace(['{tablePrefix}', '{kordSeachUrl}'], [$this->_tbl_prefix, $data['site_url'].'/kord/search?q='], $sql);
+        $sql = str_replace(['{tablePrefix}', '{kordSeachUrl}'], [$this->_tbl_prefix, $data['site_url'].'/search?q='], $sql);
 
         $rows = \Model\R::getAll( $sql, $params );
 
