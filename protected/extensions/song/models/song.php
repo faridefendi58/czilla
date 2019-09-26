@@ -339,7 +339,7 @@ class SongModel extends \Model\BaseModel
     public function getSearch($data) {
         if (!isset($data['type'])) {
             $sql = "SELECT t.*, s.name AS artist_name, s.slug AS artist_slug, 
-            l.result AS lyric, c.result AS chord   
+            l.result AS lyric, c.result AS chord, c.permalink AS chord_permalink   
             FROM {tablePrefix}ext_song t 
             LEFT JOIN {tablePrefix}ext_song_artists s ON s.id = t.artist_id 
             LEFT JOIN {tablePrefix}ext_song_lyric_refferences l ON l.song_id = t.id  
@@ -355,7 +355,7 @@ class SongModel extends \Model\BaseModel
                 WHERE t.status=:status l.id IS NOT NULL";
             } elseif ($data['type'] == 'chord') {
                 $sql = "SELECT t.*, s.name AS artist_name, s.slug AS artist_slug, 
-                c.result AS chord   
+                c.result AS chord, c.permalink AS chord_permalink    
                 FROM {tablePrefix}ext_song t 
                 LEFT JOIN {tablePrefix}ext_song_artists s ON s.id = t.artist_id  
                 LEFT JOIN {tablePrefix}ext_song_chord_refferences c ON c.song_id = t.id 
