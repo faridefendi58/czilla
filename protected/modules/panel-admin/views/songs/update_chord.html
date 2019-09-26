@@ -1,0 +1,179 @@
+{% extends "layout.html" %}
+{% block pagetitle %}
+Perbarui Chord - {{ App.params.site_name }}
+{% endblock %}
+
+{% block extended_css %}
+<link rel="stylesheet" href="{{ 'lib/select2/select2.css' | admin_asset_url }}">
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ 'css/bootstrap-fileupload.min.css' | admin_asset_url }}" />
+<div id="main_wrapper">
+    <div class="page_bar clearfix">
+        <div class="row">
+            <div class="col-sm-8">
+                <h1 class="page_title">{{ song.title }}</h1>
+                <p class="text-muted">Ubah postingan</p>
+            </div>
+            <div class="col-sm-4 text-right">
+                <a class="btn btn-default" href="{{ 'song/chords/view' | link }}">Daftar Postingan</a>
+                <a class="btn btn-default" href="{{ 'chord' | link }}/{{ song.artist_slug }}/{{ song.slug }}" target="_newtab">Lihat Postingan</a>
+            </div>
+        </div>
+    </div>
+    <div class="page_content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Kolom bertanda <span class="red">*</span> tidak boleh dikosongi
+                        </div>
+                        <div class="panel-body">
+                            {% include 'songs/_form.html' with {
+                            'song':song, 'status_list':status_list,
+                            'model':model, 'artists':artists, 'use_for_chord':true} %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'partial/right_menu.html' %}
+{% endblock %}
+{% block endbodyjs %}
+<script src="{{ 'lib/select2/select2.min.js' | admin_asset_url }}"></script>
+<script src="{{ 'js/bootstrap-fileupload.min.js' | admin_asset_url }}"></script>
+<script type="text/javascript" src="{{ 'lib/tinymce/tinymce.min.js' | admin_asset_url }}"></script>
+<script type="text/javascript">
+    $(function(){
+        tinymce.init({
+            selector : '.editor',
+            remove_linebreaks : false,
+            gecko_spellcheck : false,
+            keep_styles : true,
+            accessibility_focus : true,
+            tabfocus_elements : 'major-publishing-actions',
+            media_strict : false,
+            height: 400,
+            plugins : 'code image imagetools paste codesample',
+            menubar : false,
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | pastetext image code codesample',
+            codesample_languages: [
+                {text: 'HTML/XML', value: 'markup'},
+                {text: 'JavaScript', value: 'javascript'},
+                {text: 'CSS', value: 'css'},
+                {text: 'PHP', value: 'php'},
+                {text: 'Ruby', value: 'ruby'},
+                {text: 'Python', value: 'python'},
+                {text: 'Java', value: 'java'},
+                {text: 'C', value: 'c'},
+                {text: 'C#', value: 'csharp'},
+                {text: 'C++', value: 'cpp'}
+            ],
+            images_upload_handler: function (blobInfo, success, failure) {
+                var xhr, formData;
+
+                xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', '{{ "song/chords/direct-upload" | link }}');
+
+                xhr.onload = function() {
+                    var json;
+
+                    if (xhr.status != 200) {
+                        failure('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+
+                    var json = $.parseJSON(xhr.responseText);
+
+                    if (!json || typeof json.location != 'string') {
+                        failure('Invalid JSON: ' + xhr.responseText);
+                        return;
+                    }
+
+                    success(json.location);
+                };
+
+                formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                xhr.send(formData);
+            }
+        });
+        var success_message = "{{ message }}";
+        if (success_message && success_message.length > 0) {
+            setTimeout(function () {
+                window.location.href = "{{ 'song/chords/update' | link }}/{{ song.id }}";
+            }, 2000);
+        }
+        if($('.select2-basic').length) {
+            $('.select2-basic').select2({
+                allowClear: true,
+                placeholder: "Pilih ..."
+            });
+            $('select[id="select-artist"]').val("{{ song.artist_id }}").trigger("change");
+            $('input[id="song-url"]').val('{{ song.chord_url }}');
+            $('input[id="refference-section"]').val('{{ song.chord_section }}');
+        }
+        $('.select-song').change(function () {
+            var title = $(".select-song").find('option:selected').attr("attr-title");
+            var artist_id = $(".select-song").find('option:selected').attr("attr-artist_id");
+            var chord_url = $(".select-song").find('option:selected').attr("attr-chord_url");
+            var chord_section = $(".select-song").find('option:selected').attr("attr-chord_section");
+            var genre_id = $(".select-song").find('option:selected').attr("attr-genre_id");
+            $('input[id="song-title"]').val(title);
+            $('select[id="select-artist"]').val(artist_id).trigger("change");
+
+            buildSlug(title);
+            $('input[id="song-url"]').val(chord_url);
+            $('input[id="refference-section"]').val(chord_section);
+            if (parseInt(genre_id) > 0)
+                $('select[id="song-genre"]').val(chord_section);
+        });
+        $('a[id="generate-lyric"]').click(function () {
+            if (confirm("This action will generate the lyrics from chord content. Are you sure?")) {
+                $.ajax({
+                    'beforeSend': function() {  },
+                    'complete': function() {  },
+                    'url': "{{ 'song/chords/generate-lyric' | link }}",
+                    'type':'post',
+                    'data':{'song_id':"{{ song.id }}"},
+                    'success': function(data) {
+                        if (data.success == 1) {
+
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+        if($('#s2_tokenization').length) {
+            $('#s2_tokenization').select2({
+                placeholder: "Select...",
+                tags:["90s", "70s", "80s", "slowrock", "recommended", "requested", "hits", "classic_rock"],
+                tokenSeparators: [",", " "]
+            });
+        }
+    });
+    function getSlug(data){
+        var lang = $(data).attr('lang');
+        buildSlug($(data).val());
+    }
+    function buildSlug(title) {
+        $.ajax({
+            'beforeSend': function() {  },
+            'complete': function() {  },
+            'url': "{{ 'song/chords/get-slug' | link }}",
+            'type':'post',
+            'data':{'title':title},
+            'success': function(data) {
+                $('#slug').attr('value',data);
+            }
+        });
+    }
+</script>
+{% endblock %}

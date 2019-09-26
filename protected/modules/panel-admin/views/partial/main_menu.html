@@ -1,0 +1,92 @@
+<!-- side navigation -->
+{% if not App.user.isGuest() %}
+<nav id="side_nav">
+    <ul>
+        <li>
+            <a href="{{ '' | alink }}"><span class="ion-speedometer"></span> <span class="nav_title">Dashboard</span></a>
+        </li>
+        <li>
+            <a href="#">
+                <span class="ion-clipboard"></span>
+                <span class="nav_title">Halaman</span>
+            </a>
+            <div class="sub_panel">
+                <div class="side_inner">
+                    <h4 class="panel_heading panel_heading_first">Halaman</h4>
+                    <ul>
+                        <li><a href="{{ 'pages/view' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span>Daftar Halaman</a></li>
+                        <li><a href="{{ 'pages/create' | alink }}"><span class="side_icon ion-ios7-plus-outline"></span> Tambah Baru</a></li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+        <li>
+            <a href="#">
+                <span class="ion-monitor"></span>
+                <span class="nav_title">Tampilan</span>
+            </a>
+            <div class="sub_panel">
+                <div class="side_inner">
+                    <h4 class="panel_heading panel_heading_first">Tampilan</h4>
+                    <ul>
+                        <li><a href="{{ 'themes/view' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span> Tema</a></li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+        {% set exts = App.params.extensions | json_decode %}
+        {% if 'song' in exts %}
+        <li>
+            <a href="#">
+                <span class="ion-music-note"></span>
+                <span class="nav_title">Song</span>
+            </a>
+            <div class="sub_panel">
+                <div class="side_inner">
+                    <h4 class="panel_heading panel_heading_first">Chord</h4>
+                    <ul>
+                        <li><a href="{{ 'song/chords/view' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Daftar Chord</a></li>
+                        <li><a href="{{ 'song/chords/create' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Tambah Baru</a></li>
+                        <li><a href="{{ 'song/chords/quick-scrap' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Quick Scrap</a></li>
+                        <li><a href="{{ 'song/chords/generate-song' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Generate Judul</a></li>
+                        <li><a href="{{ 'song/chords/generate-artist' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Generate Artist</a></li>
+                        <li><a href="{{ 'song/chords/scraping-task' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Scraping Task</a></li>
+                    </ul>
+                    <h4 class="panel_heading panel_heading_first">Lyric</h4>
+                    <ul>
+                        <li><a href="{{ 'song/lyrics/view' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Daftar Lirik</a></li>
+                        <li><a href="{{ 'song/lyrics/create' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Tambah Baru</a></li>
+                    </ul>
+                    <h4 class="panel_heading panel_heading_first">Manage</h4>
+                    <ul>
+                        <li><a href="{{ 'song/genres/view' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Daftar Genre</a></li>
+                    </ul>
+                    <h4 class="panel_heading panel_heading_first">Request Chord</h4>
+                    <ul>
+                        <li><a href="{{ 'song/requests/view' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Daftar Request</a></li>
+                        <li><a href="{{ 'song/requests/search' | link }}"><span class="side_icon ion-ios7-folder-outline"></span> Sering Dicari</a></li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+        {% endif %}
+        <li>
+            <a href="#">
+                <span class="ion-settings"></span>
+                <span class="nav_title">Kelola</span>
+            </a>
+            <div class="sub_panel">
+                <div class="side_inner">
+                    <h4 class="panel_heading panel_heading_first">Kelola</h4>
+                    <ul>
+                        <li><a href="{{ 'params/view' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span> Parameter</a></li>
+                        <li><a href="{{ 'users/view' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span> User</a></li>
+                        <li><a href="{{ 'users/group' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span> User Goup</a></li>
+                        <li><a href="{{ 'extensions/view' | alink }}"><span class="side_icon ion-ios7-folder-outline"></span> Ekstensi</a></li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+    </ul>
+</nav>
+{% endif %}
