@@ -261,7 +261,7 @@ class SongModel extends \Model\BaseModel
     }
 
     public function buildSongUrl($data) {
-        if (!isset($data['permalink'])) {
+        if (!array_key_exists('permalink', $data) && array_key_exists('title', $data)) {
             $url = $data['title'];
             $song = self::getSong($data['title']);
         } else {
