@@ -85,7 +85,7 @@ Daftar Kord Gitar - {{ App.params.site_name }}
                                                     <a href="{{ 'song/artists/detail' | link }}/{{ song.artist_id }}">{{ song.artist_name }}</a>
                                                 </td>
                                                 <td>
-                                                    {% set song_url = model.buildSongUrl({'artist':song.artist_slug,'permalink':song.chord_permalink,'path':'kord'}) %}
+                                                    {% set song_url = model.buildSongUrl({'artist':song.artist_slug,'permalink':song.slug,'path':'kord'}) %}
                                                     <a href="{{ song_url | link }}" target="_newtab">{{ song_url | link }}</a>
                                                 </td>
                                                 <td><center>{{ song.status }}</center></td>
