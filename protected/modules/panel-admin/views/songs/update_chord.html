@@ -18,7 +18,11 @@ Perbarui Chord - {{ App.params.site_name }}
             </div>
             <div class="col-sm-4 text-right">
                 <a class="btn btn-default" href="{{ 'song/chords/view' | link }}">Daftar Postingan</a>
-                <a class="btn btn-default" href="{{ 'chord' | link }}/{{ song.artist_slug }}/{{ song.slug }}" target="_newtab">Lihat Postingan</a>
+                {% set perm = song.slug %}
+                {% if song.chord_permalink %}
+                    {% set perm = song.chord_permalink %}
+                {% endif %}
+                <a class="btn btn-default" href="{{ 'chord' | link }}/{{ song.artist_slug }}/{{ perm }}" target="_newtab">Lihat Postingan</a>
             </div>
         </div>
     </div>
