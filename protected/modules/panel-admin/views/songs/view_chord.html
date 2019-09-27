@@ -85,7 +85,7 @@ Daftar Kord Gitar - {{ App.params.site_name }}
                                                     <a href="{{ 'song/artists/detail' | link }}/{{ song.artist_id }}">{{ song.artist_name }}</a>
                                                 </td>
                                                 <td>
-                                                    {% set song_url = model.buildSongUrl({'artist':song.artist_slug,'permalink':song.slug,'path':'chord'}) %}
+                                                    {% set song_url = model.buildSongUrl({'artist':song.artist_slug,'permalink':song.chord_permalink,'path':'kord'}) %}
                                                     <a href="{{ song_url | link }}" target="_newtab">{{ song_url | link }}</a>
                                                 </td>
                                                 <td><center>{{ song.status }}</center></td>
@@ -130,7 +130,7 @@ Daftar Kord Gitar - {{ App.params.site_name }}
                                                     <a href="{{ 'song/artists/detail' | link }}/{{ approved.artist_id }}">{{ approved.artist_name }}</a>
                                                 </td>
                                                 <td>
-                                                    {% set song_url = model.buildSongUrl({'artist':approved.artist_slug,'permalink':approved.slug,'path':'chord'}) %}
+                                                    {% set song_url = model.buildSongUrl({'artist':approved.artist_slug,'permalink':approved.chord_permalink,'path':'kord'}) %}
                                                     <a href="{{ song_url | link }}" target="_newtab">{{ song_url | link }}</a>
                                                 </td>
                                                 <td><center>{{ approved.status }}</center></td>
@@ -152,25 +152,25 @@ Daftar Kord Gitar - {{ App.params.site_name }}
                                             </tbody>
                                         </table>
                                         {#<table
-                                                data-show-export="false"
-                                                data-pagination="true"
-                                                data-show-pagination-switch="true"
-                                                data-search="true"
-                                                data-toggle="table"
-                                                data-url="{{ 'song/chords/list-view' | link }}/1">
+                                            data-show-export="false"
+                                            data-pagination="true"
+                                            data-show-pagination-switch="true"
+                                            data-search="true"
+                                            data-toggle="table"
+                                            data-url="{{ 'song/chords/list-view' | link }}/1">
 
-                                            <thead>
-                                            <tr>
-                                                <th data-sortable="true" data-field="id">id</th>
-                                                <th data-field="title">Title</th>
-                                                <th data-field="artist_name">Artist Name</th>
-                                                <th data-field="artist_slug">Permalink</th>
-                                                <th data-field="status">Status Postingan</th>
-                                                <th data-formatter="TableActions" data-align="center">&nbsp;</th>
-                                            </tr>
-                                            </thead>
+                                        <thead>
+                                        <tr>
+                                            <th data-sortable="true" data-field="id">id</th>
+                                            <th data-field="title">Title</th>
+                                            <th data-field="artist_name">Artist Name</th>
+                                            <th data-field="artist_slug">Permalink</th>
+                                            <th data-field="status">Status Postingan</th>
+                                            <th data-formatter="TableActions" data-align="center">&nbsp;</th>
+                                        </tr>
+                                        </thead>
 
-                                        </table>#}
+                                    </table>#}
                                     </div>
                                 </div>
                             </div>
