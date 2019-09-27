@@ -590,14 +590,7 @@ class SongModel extends \Model\BaseModel
             $artist_chords = []; $abjad_chords = [];
             foreach ($rows as $i => $row) {
                 // hide the abjad category
-                /*if (!in_array($row['abjad_name'], $abjads)) {
-                    $items[] = [
-                        'loc' => $url_origin.'/lirik/'.$row['abjad_name'],
-                        'lastmod' => date("c"),
-                        'priority' => 0.5
-                    ];
-                    array_push($abjads, $row['abjad_name']);
-                }*/
+                /*
                 if (!in_array($row['artist_slug'], $artists)) {
                     $items[] = [
                         'loc' => $url_origin.'/lirik/'.$row['artist_slug'],
@@ -610,26 +603,18 @@ class SongModel extends \Model\BaseModel
                     'loc' => $url_origin.'/'.$this->buildSongUrl(['path' => 'lirik', 'artist' => $row['artist_slug'], 'title' => $row['slug']]), //$url_origin.'/lirik/'.$row['artist_slug'].'/'.$row['slug'],
                     'lastmod' => date("c", strtotime($row['last_lyric_update'])),
                     'priority' => ($row['lyric_featured'] > 0)? 0.6 : 0.5
-                ];
+                ];*/
                 if (!empty($row['last_chord_update'])) {
-                    /*if (!in_array($row['abjad_name'], $abjad_chords)) {
-                        $items[] = [
-                            'loc' => $url_origin.'/kord/'.$row['abjad_name'],
-                            'lastmod' => date("c"),
-                            'priority' => 0.5
-                        ];
-                        array_push($abjad_chords, $row['abjad_name']);
-                    }*/
                     if (!in_array($row['artist_slug'], $artist_chords)) {
                         $items[] = [
-                            'loc' => $url_origin.'/kord/'.$row['artist_slug'],
+                            'loc' => $url_origin.'/chord/'.$row['artist_slug'],
                             'lastmod' => date("c"),
                             'priority' => 0.5
                         ];
                         array_push($artist_chords, $row['artist_slug']);
                     }
                     $items[] = [
-                        'loc' => $url_origin.'/'.$this->buildSongUrl(['path' => 'chord', 'artist' => $row['artist_slug'], 'title' => $row['slug']]), //$url_origin.'/kord/'.$row['artist_slug'].'/'.$row['slug'],
+                        'loc' => $url_origin.'/'.$this->buildSongUrl(['path' => 'chord', 'artist' => $row['artist_slug'], 'permalink' => $row['chord_permalink']]), //$url_origin.'/kord/'.$row['artist_slug'].'/'.$row['slug'],
                         'lastmod' => date("c", strtotime($row['last_chord_update'])),
                         'priority' => ($row['chord_featured'] > 0)? 0.6 : 0.5
                     ];
