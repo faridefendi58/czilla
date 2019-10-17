@@ -30,6 +30,7 @@ class ChordsController extends BaseController
         $app->map(['GET', 'POST'], '/scraping-job/[{limit}]', [$this, 'scraping_job']);
         $app->map(['GET', 'POST'], '/quick-scrap', [$this, 'quick_scrap']);
         $app->map(['GET', 'POST'], '/list-view/[{approved}]', [$this, 'list_view']);
+        $app->map(['GET', 'POST'], '/import-json', [$this, 'import_json']);
     }
 
     public function accessRules()
@@ -38,7 +39,7 @@ class ChordsController extends BaseController
             ['allow',
                 'actions' => ['view', 'create', 'update', 'delete',
                     'generate-song', 'generate-artist', 'delete-artist', 'delete-song',
-                    'quick-scrap'],
+                    'quick-scrap', 'import-json'],
                 'users'=> ['@'],
             ],
             ['deny',
@@ -1016,5 +1017,131 @@ class ChordsController extends BaseController
         }
 
         return $response->withJson($items, 201);
+    }
+
+    public function import_json($request, $response, $args)
+    {
+        $isAllowed = $this->isAllowed($request, $response, $args);
+        if ($isAllowed instanceof \Slim\Http\Response)
+            return $isAllowed;
+
+        if (!$isAllowed) {
+            return $this->notAllowedAction();
+        }
+
+        $model = new \ExtensionsModel\SongModel();
+        $samodel = new \ExtensionsModel\SongArtistModel();
+
+        $params = $request->getParams();
+
+        $items = [];
+        $message = null; $success = false;
+        $failed_to_save = [];
+        if (isset($params['Songs'])) {
+            if ($params['Submit'] == 'Generate') {
+                if (isset($_FILES['Songs'])) {
+                    if ($_FILES['Songs']['type']['json_file'] == 'application/json') {
+                        $file = file_get_contents($_FILES['Songs']['tmp_name']['json_file']);
+                        $results = json_decode($file, true);
+                        if (is_array($results) && array_key_exists('data', $results[2])) {
+                            $items = $results[2]['data'];
+                            $_SESSION['json_entry'] = $items;
+                        }
+                    }
+                }
+            } else {
+                if (is_array($params['choose'])) {
+                    $items = $_SESSION['json_entry'];
+                    if (isset($params['check_all'])) {
+                        $params['choose'] =  array_keys($items);//range(0, count($items) - 1);
+                    }
+
+                    foreach ($params['choose'] as $i => $on) {
+                        if (!empty($params['Songs']['artist_name'])) {
+                            $adata = $samodel->getArtistByName($params['Songs']['artist_name'][$i]);
+                            if (is_array($adata)) {
+                                $artist_id = $adata['id'];
+                            } else {
+                                $artist_slugs = $samodel->getSlugs();
+                                $amodel = new \ExtensionsModel\SongAbjadModel();
+                                $alphabets = $amodel->getItems();
+
+                                $amodel = new \ExtensionsModel\SongArtistModel('create');
+                                $amodel->name = ucwords(strtolower($params['Songs']['artist_name'][$i]));
+                                $amodel->slug = $model->createSlug($amodel->name);
+                                if (!in_array($amodel->slug, $artist_slugs)) {
+                                    $amodel->chord_url = '#';
+                                    $amodel->chord_section = '#';
+                                    $amodel->abjad_id = array_search(substr(ucwords($amodel->name), 0, 1), $alphabets);
+                                    $amodel->created_at = date("Y-m-d H:i:s");
+                                    $amodel->updated_at = date("Y-m-d H:i:s");
+                                    $song_artist = \ExtensionsModel\SongArtistModel::model();
+                                    $save = $song_artist->save(@$amodel);
+                                    if ($save > 0) {
+                                        $artist_id = $amodel->id;
+                                    }
+                                }
+                            }
+
+                            if ($artist_id > 0) {
+                                // saving the song
+                                $model1 = new \ExtensionsModel\SongModel('create');
+                                $model1->title = ucwords(strtolower($params['Songs']['song_title'][$i]));
+                                if (strpos($model1->title, " - ") !== false) {
+                                    $exps = explode(" - ", $model1->title);
+                                    $model1->title = $exps[1];
+                                }
+                                $model1->slug = $model->createSlug($model1->title);
+                                $model1->artist_id = $artist_id;
+                                $song_slugs = $model1->getSlugs();
+                                $create_new_song = true;
+                                if (in_array($model1->slug, $song_slugs)) {
+                                    $model1->slug = $model->createSlug($params['Songs']['artist_name'][$i].' '.$model1->title);
+                                    if (in_array($model1->slug, $song_slugs)) { //if any in database, skip it
+                                        $create_new_song = false;
+                                        array_push($failed_to_save, $model1->title);
+                                    }
+                                }
+
+                                if ($create_new_song) {
+                                    $model1->status = \ExtensionsModel\SongModel::STATUS_DRAFT;
+                                    $model1->created_at = date("Y-m-d H:i:s");
+                                    $model1->updated_at = date("Y-m-d H:i:s");
+                                    $song = \ExtensionsModel\SongModel::model();
+                                    $save = $song->save(@$model1);
+                                    if ($save > 0) {
+                                        $model2 = new \ExtensionsModel\SongCordRefferenceModel('create');
+                                        $model2->song_id = $model1->id;
+                                        $model2->url = '#';
+                                        $model2->section = '#';
+                                        $model2->result = $items[$i]['chord'];
+                                        /*$meta_title = $model1->title.' '.$params['Songs']['artist_name'][$i].' guitar chord';
+                                        $model2->permalink = $model->createSlug($meta_title);
+                                        $model2->meta_title = $meta_title;*/
+                                        $model2->status = \ExtensionsModel\SongCordRefferenceModel::STATUS_EXECUTED;
+                                        $model2->executed_at = date("Y-m-d H:i:s");
+                                        $model2->created_at = date("Y-m-d H:i:s");
+                                        $model2->updated_at = date("Y-m-d H:i:s");
+                                        $save2 = \ExtensionsModel\SongCordRefferenceModel::model()->save(@$model2);
+                                        if ($save2 > 0) {
+                                            $message = 'Data telah berhasil disimpan.';
+                                            $success = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this->_container->module->render($response, 'songs/import_json.html', [
+            'model' => $model,
+            'items' => $items,
+            'message' => ($message) ? $message : null,
+            'success' => $success,
+            'failed_data' => (count($failed_to_save) > 0)? implode(", ", $failed_to_save) : null
+        ]);
     }
 }
