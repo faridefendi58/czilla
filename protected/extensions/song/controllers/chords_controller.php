@@ -1059,15 +1059,17 @@ class ChordsController extends BaseController
                     foreach ($params['choose'] as $i => $on) {
                         if (!empty($params['Songs']['artist_name'])) {
                             $adata = $samodel->getArtistByName($params['Songs']['artist_name'][$i]);
+                            $artist_name = ucwords(strtolower($params['Songs']['artist_name'][$i]));
                             if (is_array($adata)) {
                                 $artist_id = $adata['id'];
+                                $artist_name = $adata['name'];
                             } else {
                                 $artist_slugs = $samodel->getSlugs();
-                                $amodel = new \ExtensionsModel\SongAbjadModel();
-                                $alphabets = $amodel->getItems();
+                                $abmodel = new \ExtensionsModel\SongAbjadModel();
+                                $alphabets = $abmodel->getItems();
 
                                 $amodel = new \ExtensionsModel\SongArtistModel('create');
-                                $amodel->name = ucwords(strtolower($params['Songs']['artist_name'][$i]));
+                                $amodel->name = $artist_name;
                                 $amodel->slug = $model->createSlug($amodel->name);
                                 if (!in_array($amodel->slug, $artist_slugs)) {
                                     $amodel->chord_url = '#';
@@ -1080,6 +1082,11 @@ class ChordsController extends BaseController
                                     if ($save > 0) {
                                         $artist_id = $amodel->id;
                                     }
+                                } else {
+                                    $a_data = \ExtensionsModel\SongArtistModel::model()->findByAttributes(['slug' => $amodel->slug]);
+                                    if ($a_data instanceof \RedBeanPHP\OODBBean) {
+                                        $artist_id = $a_data->id;
+                                    }
                                 }
                             }
 
@@ -1088,8 +1095,10 @@ class ChordsController extends BaseController
                                 $model1 = new \ExtensionsModel\SongModel('create');
                                 $model1->title = ucwords(strtolower($params['Songs']['song_title'][$i]));
                                 if (strpos($model1->title, " - ") !== false) {
-                                    $exps = explode(" - ", $model1->title);
-                                    $model1->title = $exps[1];
+                                    if (strpos($model1->title, $artist_name) !== false) {
+                                        $model1->title = str_replace($artist_name,"",$model1->title);
+                                    }
+                                    $model1->title = str_replace(" - ","",$model1->title);
                                 }
                                 $model1->slug = $model->createSlug($model1->title);
                                 $model1->artist_id = $artist_id;
