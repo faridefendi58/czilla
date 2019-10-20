@@ -327,7 +327,9 @@ class SongModel extends \Model\BaseModel
 
     public function getImage($slug) {
         $file = $_SERVER['DOCUMENT_ROOT'].'/uploads/songs/'.$slug;
-        if (file_exists($file.'.jpg')) {
+        if (file_exists($file.'.webp')) {
+            return 'uploads/songs/'.$slug.'.webp';
+        } elseif (file_exists($file.'.jpg')) {
             return 'uploads/songs/'.$slug.'.jpg';
         } elseif (file_exists($file.'.png')) {
             return 'uploads/songs/'.$slug.'.png';
