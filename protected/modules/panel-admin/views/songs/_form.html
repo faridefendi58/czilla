@@ -137,7 +137,7 @@
                         {% if song.chord_permalink %}
                             {% set custom_permalink = song.chord_permalink %}
                         {% else %}
-                            {% set custom_permalink = song.slug~'-'~song.artist_slug~'-guitar-chord' %}
+                            {% set custom_permalink = song.artist_slug~'-'~song.slug~'-chords' %}
                         {% endif %}
                     {% endif %}
                     <input type="text" name="Songs[permalink]" class="form-control"
@@ -152,7 +152,7 @@
                         {% if song.chord_meta_title %}
                         {% set song_meta_title = song.chord_meta_title %}
                         {% else %}
-                        {% set song_meta_title = song.title ~ ' '~ song.artist_name ~' Guitar Chord' %}
+                        {% set song_meta_title = song.artist_name ~' '~ song.title ~ ' Chords' %}
                         {% endif %}
                     {% endif %}
                     <input type="text" name="Songs[meta_title]" class="form-control"
@@ -168,7 +168,7 @@
                             {% set meta_keyword = song.chord_meta_keyword %}
                         {% else %}
                             {% set lower_song_title = song.title | lower %}
-                            {% set meta_keyword = lower_song_title~' chord, '~lower_song_title~' guitar chord' %}
+                            {% set meta_keyword = lower_song_title~' chords, '~lower_song_title~' guitar chords' %}
                         {% endif %}
                     {% endif %}
                     <textarea name="Songs[meta_keyword]" class="form-control"
@@ -182,7 +182,7 @@
                         {% if song.chord_meta_description %}
                             {% set meta_description = song.chord_meta_description %}
                         {% else %}
-                            {% set meta_description = song.title ~' '~ song.artist_name ~' guitar chord in .' %}
+                            {% set meta_description = song.artist_name ~' '~ song.title ~' chords in .' %}
                         {% endif %}
                     {% endif %}
                     <textarea name="Songs[meta_description]" class="form-control"

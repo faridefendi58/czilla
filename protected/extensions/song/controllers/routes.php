@@ -8,13 +8,18 @@ $app->get('/lirik/search', function ($request, $response, $args) use ($app) {
     $model = new \ExtensionsModel\SongModel();
     $params = $request->getParams();
     if ($params['type'] == 'chord' || $params['type'] == 'chord') {
-        return $response->withRedirect('/chord/search?q='.$params['q']);
+        return $response->withRedirect('/search?q='.$params['q']);
     }
 
     return $this->view->render($response, 'song_search.phtml', [
         'model' => $model,
         'params' => $params,
     ]);
+});
+
+$app->get('/chord/search', function ($request, $response, $args) use ($app) {
+    $params = $request->getParams();
+    return $response->withRedirect('/search?q='.$params['q']);
 });
 
 $app->get('/lirik[/{artist}[/{title}]]', function ($request, $response, $args) {

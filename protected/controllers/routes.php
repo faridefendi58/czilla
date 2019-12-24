@@ -59,7 +59,7 @@ $app->get('/[{name}]', function ($request, $response, $args) {
     ]);
 });
 
-$app->post('/contact-us', function ($request, $response, $args) {
+/*$app->post('/contact-us', function ($request, $response, $args) {
     $message = 'Failed in sending your message.';
     $settings = $this->get('settings');
     if (isset($_POST['Contact'])){
@@ -105,7 +105,7 @@ $app->post('/contact-us', function ($request, $response, $args) {
     }
 
     echo $message; exit;
-});
+});*/
 
 $app->post('/tracking', function ($request, $response, $args) {
     if (isset($_POST['s'])){
