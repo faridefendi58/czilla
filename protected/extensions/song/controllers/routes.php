@@ -120,7 +120,41 @@ $app->get('/chord[/{artist}[/{title}]]', function ($request, $response, $args) {
             ]);
         }
     } else {
-        $data = $model->getSong($args['title']);
+        $use_cached = false;
+        if (array_key_exists('artist', $args)
+            && array_key_exists('use_cached_file', $this->settings['params'])
+            && $this->settings['params']['use_cached_file']) {
+
+            $dir = 'protected/data/songs/';
+            $file = $dir. $args['artist'].'_'.$args['title'].'.json';
+            if(!file_exists($file)) {
+                $data = $model->getSong($args['title']);
+                if (!empty($data['chord_permalink']) && $data['chord_permalink'] == $args['title']) {
+                    $new_file = fopen($file, "w");
+                    file_put_contents($file, json_encode($data));
+                    $use_cached = true;
+                }
+            } else {
+                $data = file_get_contents($file);
+                if (empty($data)) {
+                    $data = $model->getSong($args['title']);
+                    file_put_contents($file, json_encode($data));
+                    $use_cached = true;
+                } else {
+                    $data = json_decode($data, true);
+                    if (!empty($data['chord_permalink']) && $data['chord_permalink'] == $args['title']) {
+                        $use_cached = true;
+                    } else {
+                        unlink($file);
+                    }
+                }
+            }
+        }
+
+        if (!$use_cached) {
+            $data = $model->getSong($args['title']);
+        }
+
         if (empty($data)) {
             // check by title
             $data = $model->getSongByTitle(strtolower($args['title']), $args['artist']);

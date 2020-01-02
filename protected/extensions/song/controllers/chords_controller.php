@@ -31,6 +31,7 @@ class ChordsController extends BaseController
         $app->map(['GET', 'POST'], '/quick-scrap', [$this, 'quick_scrap']);
         $app->map(['GET', 'POST'], '/list-view/[{approved}]', [$this, 'list_view']);
         $app->map(['GET', 'POST'], '/import-json', [$this, 'import_json']);
+        $app->map(['GET'], '/generate-cache', [$this, 'generate_cache']);
     }
 
     public function accessRules()
@@ -275,6 +276,12 @@ class ChordsController extends BaseController
                     $song_detail = $smodel->getSongDetail($model->id);
                     $message = 'Your chord is successfully updated.';
                     $success = true;
+
+                    // update the cache
+                    try {
+                        $hook_params = $smodel->getSong($model2->permalink);
+                        $this->onAfterChordSaved($hook_params);
+                    } catch (\Exception $e){}
                 }
             } else {
                 $message = 'Failed to update your chord.';
@@ -1152,5 +1159,99 @@ class ChordsController extends BaseController
             'success' => $success,
             'failed_data' => (count($failed_to_save) > 0)? implode(", ", $failed_to_save) : null
         ]);
+    }
+
+    public function generate_cache($request, $response, $args)
+    {
+        $params = $request->getParams();
+        $data = [];
+        if (is_array($params) && count($params) > 0 && array_key_exists('cached_name', $params)) {
+            $song = new \ExtensionsModel\SongModel();
+            $data = $song->getSongs($params);
+
+            $file = 'protected/data/'. $params['cached_name'] .'.json';
+            if(!file_exists($file)) {
+                $new_file = fopen($file, "w");
+            }
+            file_put_contents($file, json_encode($data));
+
+            echo count($data); exit;
+        }
+
+        return false;
+    }
+
+    private function onAfterChordSaved($hook_params = []) {
+        $jobs = [
+            'chord_latest' => [
+                "status" => "published",
+                "order_by" => "published_at",
+                "limit" => 20,
+                "type" => "chord",
+                "top_track" => 1,
+                "cached_name" => "chord_latest"
+            ],
+            'chord_featured' => [
+                "status" => "published",
+                "order_by" => "published_at",
+                "limit" => 7,
+                "type" => "chord",
+                "featured" => 1,
+                "cached_name" => "chord_featured"
+            ],
+            'chord_recommended' => [
+                "status" => "published",
+                "limit" => 10,
+                "type" => "chord",
+                "tag" => "recommended",
+                "cached_name" => "chord_recommended"
+            ],
+            'chord_mostly_played' => [
+                "status" => "published",
+                "limit" => 10,
+                "type" => "chord",
+                "order_by" => "c.viewed",
+                "cached_name" => "chord_mostly_played"
+            ]
+        ];
+
+        $success = 0;
+        foreach ($jobs as $i => $job) {
+            $qry = http_build_query($job);
+            $url = $this->_settings['params']['site_url'] .'/song/chords/generate-cache?'. $qry;
+            if (function_exists('curl_version')) {
+                $ch = curl_init();
+
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_URL, $url);
+
+                if(curl_exec($ch) === false) {
+                    echo 'Curl error: ' . curl_error($ch);
+                } else {
+                    $success = $success + 1;
+                }
+                curl_close($ch);
+            } else {
+                $html = file_get_html($url);
+                $html->clear();
+                unset($html);
+                $success = $success + 1;
+            }
+        }
+
+        // also update cached song
+        if (array_key_exists('artist_slug', $hook_params) && array_key_exists('chord_permalink', $hook_params)) {
+            $dir = 'protected/data/songs/';
+            $file = $dir. $hook_params['artist_slug'].'_'.$hook_params['chord_permalink'].'.json';
+            if(!file_exists($file)) {
+                $new_file = fopen($file, "w");
+                file_put_contents($file, json_encode($hook_params));
+            } else {
+                file_put_contents($file, json_encode($hook_params));
+            }
+        }
+
+        return $success;
     }
 }
