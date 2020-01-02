@@ -681,4 +681,22 @@ class SongModel extends \Model\BaseModel
 
         return $content;
     }
+
+    public function getCleanLyrics($chord) {
+        $tags = ['a', 'sup', 'strong', 'b'];
+        $chord = preg_replace('#<(' . implode( '|', $tags) . ')(?:[^>]+)?>.*?</\1>#s', '', $chord);
+        $chord = str_replace("&nbsp;", '', $chord);
+        // remove empty p
+        $chord = preg_replace('/<p[^>]*><\\/p[^>]*>/', '', $chord);
+        $chord = trim(preg_replace('/\s+/', ' ', $chord));
+        $chord = preg_replace('#<br[^>]*>#s', "@", $chord);
+        $chord = preg_replace(['/@@ @/'], ["@"], $chord);
+        $chord = preg_replace(['/@ @/'], ["@"], $chord);
+        $chord = preg_replace(['/@@/', '/@ @/'], ["@", "@"], $chord);
+        $chord = preg_replace(['/@\s+/'], ["@"], $chord);
+        $chord = preg_replace('/@/', "<br>", $chord);
+        $chord = preg_replace(['#<p[^>]*>(\s|&nbsp;|</?\s?br\s?/?>)*</?p>#'], [""], $chord);
+
+        return $chord;
+    }
 }
