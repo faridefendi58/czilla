@@ -672,7 +672,7 @@ class SongModel extends \Model\BaseModel
             $content = str_replace(array( '{', '}', ':', '[', ']' ), array('%', '%', '', '%', '%'), $content);
             $content = trim(preg_replace('/\s*\%[^%]*\%/', '', $content));
             $content = strstr($content, "Intro");
-            $content = str_replace(array( 'Intro', 'Musik', 'Reff', 'Outro' ), '', $content);
+            $content = str_replace(array( 'Intro', 'Musik', 'Reff', 'Outro', 'Chorus', 'Coda', 'Instrument', 'Music' ), '', $content);
             $content = preg_replace('#<br />(\s*<br />)+#', ',', $content);
         }
         $content = preg_replace('#<p[^>]*>(\s|&nbsp;?)*</p>#', '', $content);
@@ -700,5 +700,19 @@ class SongModel extends \Model\BaseModel
         $chord = preg_replace(['#<p[^>]*>(\s|&nbsp;|</?\s?br\s?/?>)*</?p>#'], [""], $chord);
 
         return $chord;
+    }
+
+    public function getSongChordPremalink($slug)
+    {
+        $sql = "SELECT c.permalink AS chord_permalink
+        FROM {tablePrefix}ext_song t  
+        LEFT JOIN {tablePrefix}ext_song_chord_refferences c ON c.song_id = t.id  
+        WHERE t.slug =:slug";
+
+        $sql = str_replace(['{tablePrefix}'], [$this->_tbl_prefix], $sql);
+
+        $row = \Model\R::getRow( $sql, ['slug'=>$slug] );
+
+        return $row['chord_permalink'];
     }
 }

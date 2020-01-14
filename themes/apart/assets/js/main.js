@@ -372,19 +372,21 @@ jQuery(window).load(function () {
                 $(this).parent().children('a').removeClass("hover-menu");
             }
         );
-        $(".slider-range").each(function (index) {
-            var sliderId = $(this).attr('id');
-            $(this).slider({
-                range: true,
-                min: parseFloat($(this).attr("data-min")),
-                max: parseFloat($(this).attr("data-max")),
-                values: [parseFloat($(this).attr("data-min")), parseFloat($(this).attr("data-max"))],
-                slide: function (event, ui) {
-                    $("#" + sliderId + "-value").val(ui.values[0] + " - " + ui.values[1]);
-                }
+        if ($(".slider-range").length > 0) {
+            $(".slider-range").each(function (index) {
+                var sliderId = $(this).attr('id');
+                $(this).slider({
+                    range: true,
+                    min: parseFloat($(this).attr("data-min")),
+                    max: parseFloat($(this).attr("data-max")),
+                    values: [parseFloat($(this).attr("data-min")), parseFloat($(this).attr("data-max"))],
+                    slide: function (event, ui) {
+                        $("#" + sliderId + "-value").val(ui.values[0] + " - " + ui.values[1]);
+                    }
+                });
+                $("#" + sliderId + "-value").val($(this).slider("values", 0) + " - " + $(this).slider("values", 1));
             });
-            $("#" + sliderId + "-value").val($(this).slider("values", 0) + " - " + $(this).slider("values", 1));
-        });
+        }
 
         if ($("#slide-more-cont").length) {
             $("#slide-more-cont").lightGallery({
@@ -690,14 +692,16 @@ jQuery(window).load(function () {
             new SelectFx(el);
         });
 
-        $('.bootstrap-select').selectpicker({
-            container: 'body',
-            selectedTextFormat: 'count > 2'
+        if ($('.bootstrap-select').length>0 && typeof selectpicker !== undefined) {
+            $('.bootstrap-select').selectpicker({
+                container: 'body',
+                selectedTextFormat: 'count > 2'
 
-        });
+            });
 
-        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
-            $('.bootstrap-select').selectpicker('mobile');
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+                $('.bootstrap-select').selectpicker('mobile');
+            }
         }
 
         $('.featured-offer-col').each(function () {

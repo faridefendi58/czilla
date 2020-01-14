@@ -4,7 +4,7 @@ $app->get('/artist/[{name}]', function ($request, $response, $args) {
     return $response->withStatus(301)->withHeader('Location', '/');
 });
 // frontend url
-$app->get('/lirik/search', function ($request, $response, $args) use ($app) {
+$app->get('/lyric/search', function ($request, $response, $args) use ($app) {
     $model = new \ExtensionsModel\SongModel();
     $params = $request->getParams();
     if ($params['type'] == 'chord' || $params['type'] == 'chord') {
@@ -23,59 +23,13 @@ $app->get('/chord/search', function ($request, $response, $args) use ($app) {
 });
 
 $app->get('/lirik[/{artist}[/{title}]]', function ($request, $response, $args) {
-    $theme = $this->settings['theme'];
-    $model = new \ExtensionsModel\SongModel();
-
     if (empty($args['title'])) {
-        // it should be the title = artist slug if the length > 0
-        if (strlen($args['artist']) > 1){
-            $amodel = \ExtensionsModel\SongArtistModel::model()->findByAttributes(['slug' => $args['artist']]);
-            $songs = null;
-            if ($amodel instanceof \RedBeanPHP\OODBBean) {
-                $songs = $model->getSongs(['artist_id' => $amodel->id, 'type' => 'lyric']);
-            }
-
-            return $this->view->render($response, 'song_lyric_index.phtml', [
-                'model' => $model,
-                'songs' => $songs,
-                'amodel' => $amodel
-            ]);
-        } else { //if the title is Abjad
-            $abmodel = \ExtensionsModel\SongAbjadModel::model()->findByAttributes(['title' => strtoupper($args['artist'])]);
-            $artists = null;
-            if ($abmodel instanceof \RedBeanPHP\OODBBean) {
-                $artists = $model->getArtists(['abjad_id' => $abmodel->id, 'has_lyric' => true]);
-            }
-
-            return $this->view->render($response, 'song_lyric_index.phtml', [
-                'model' => $model,
-                'selected_abjad' => strtoupper($args['artist']),
-                'artists' => $artists
-            ]);
-        }
+        return $response->withRedirect('/lyric/'. $args['artist']);
     } else {
-        $data = $model->getSong($args['title']);
-        if (empty($data)) {
-            // check by title
-            $data = $model->getSongByTitle(strtolower($args['title']), $args['artist']);
-
-            if (!empty($data['lyric_permalink']))
-                return $response->withRedirect('/lirik/'.$args['artist'].'/'.$data['lyric_permalink']);
-            else
-                return $response->withRedirect('/lirik/'.$args['artist'].'/'.$data['lyric_slug']);
-        } else {
-            if (!empty($data['lyric_permalink']) && $data['lyric_permalink'] != $args['title']) {
-                return $response->withRedirect('/lirik/'.$args['artist'].'/'.$data['lyric_permalink']);
-            }
-        }
-
-        return $this->view->render($response, 'song_lyric.phtml', [
-            'data' => $data,
-            'msong' => $model
-        ]);
+        return $response->withRedirect('/lyric/'. $args['artist'] .'/'. $args['title']);
     }
 
-    return $this->view->render($response, '404.phtml');
+    return $response->withRedirect('/lyric/'. $args['title']);
 });
 
 $app->get('/search', function ($request, $response, $args) {
@@ -200,6 +154,90 @@ $app->get('/genre/[{genre_slug}]', function ($request, $response, $args) {
     return $this->view->render($response, '404.phtml');
 });
 
+$app->get('/lyric[/{artist}[/{title}]]', function ($request, $response, $args) {
+    $theme = $this->settings['theme'];
+    $model = new \ExtensionsModel\SongModel();
+
+    if (empty($args['title'])) {
+        // it should be the title = artist slug if the length > 0
+        if (strlen($args['artist']) > 1){
+            $amodel = \ExtensionsModel\SongArtistModel::model()->findByAttributes(['slug' => $args['artist']]);
+            $songs = null;
+            if ($amodel instanceof \RedBeanPHP\OODBBean) {
+                $songs = $model->getSongs(['artist_id' => $amodel->id, 'type'=>'chord']);
+            }
+
+            return $this->view->render($response, 'song_lyric_index.phtml', [
+                'model' => $model,
+                'songs' => $songs,
+                'amodel' => $amodel
+            ]);
+        } else { //if the title is Abjad
+            $abmodel = \ExtensionsModel\SongAbjadModel::model()->findByAttributes(['title' => strtoupper($args['artist'])]);
+            $artists = null;
+            if ($abmodel instanceof \RedBeanPHP\OODBBean) {
+                $artists = $model->getArtists(['abjad_id' => $abmodel->id, 'has_chord' => true]);
+            }
+
+            return $this->view->render($response, 'song_lyric_index.phtml', [
+                'model' => $model,
+                'selected_abjad' => strtoupper($args['artist']),
+                'artists' => $artists
+            ]);
+        }
+    } else {
+        $perm = $model->getSongChordPremalink($args['title']);
+        $use_cached = false;
+        if (array_key_exists('artist', $args)
+            && array_key_exists('use_cached_file', $this->settings['params'])
+            && $this->settings['params']['use_cached_file']) {
+
+            $dir = 'protected/data/songs/';
+            $file = $dir. $args['artist'].'_'.$perm.'.json';
+            if(!file_exists($file)) {
+                $data = $model->getSong($perm);
+                if (!empty($data['chord_permalink']) && $data['chord_permalink'] == $perm) {
+                    $new_file = fopen($file, "w");
+                    file_put_contents($file, json_encode($data));
+                    $use_cached = true;
+                }
+            } else {
+                $data = file_get_contents($file);
+                if (empty($data)) {
+                    $data = $model->getSong($perm);
+                    file_put_contents($file, json_encode($data));
+                    $use_cached = true;
+                } else {
+                    $data = json_decode($data, true);
+                    if (!empty($data['chord_permalink']) && $data['chord_permalink'] == $perm) {
+                        $use_cached = true;
+                    } else {
+                        unlink($file);
+                    }
+                }
+            }
+        }
+
+        if (!$use_cached) {
+            $data = $model->getSong($perm);
+        }
+
+        $chord_reformated = $model->reformatChordContent($data['chord']);
+        $data['lyric'] = $model->getCleanLyrics($chord_reformated);
+        $data['lyric_meta_decription'] = substr(strip_tags($data['lyric']), 0, 100);
+        // save the counter
+        //$crmodel = new \ExtensionsModel\SongCordRefferenceModel();
+        //$record = $crmodel->recordVisit($args['title'], $data['id']);
+
+        return $this->view->render($response, 'song_lyric.phtml', [
+            'data' => $data,
+            'msong' => $model
+        ]);
+    }
+
+    return $this->view->render($response, '404.phtml');
+});
+
 foreach (glob(__DIR__.'/*_controller.php') as $controller) {
 	$cname = basename($controller, '.php');
 	if (!empty($cname)) {
@@ -232,6 +270,9 @@ $app->group('/song', function () use ($user) {
     });
     $this->group('/genres', function() use ($user) {
         new Extensions\Controllers\GenresController($this, $user);
+    });
+	$this->group('/images', function() use ($user) {
+        new Extensions\Controllers\ImagesController($this, $user);
     });
 });
 
