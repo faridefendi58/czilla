@@ -25,12 +25,12 @@ $app->post('/contact-us', function ($request, $response, $args) {
                 $mail->Password = $settings['params']['smtp_secret'];
                 $mail->SMTPSecure = $settings['params']['smtp_secure'];
                 $mail->Port = $settings['params']['smtp_port'];
-
+    
                 //Recipients
                 $mail->setFrom( $settings['params']['admin_email'], 'Admin Chordzilla' );
                 $mail->addAddress( $settings['params']['admin_email'], 'Farid Efendi' );
                 $mail->addReplyTo( $_POST['Contact']['email'], $_POST['Contact']['name'] );
-
+    
                 //Content
                 $mail->isHTML(true);
                 $mail->Subject = '[ChordZilla] Kontak Kami';
@@ -43,7 +43,7 @@ $app->post('/contact-us', function ($request, $response, $args) {
                 <b>Alamat Email</b> : ".$_POST['Contact']['email']." <br/>
                 <br/>
                 <b>Isi Pesan</b> :<br/> ".$_POST['Contact']['message']."";
-
+    
                 $mail->send();
             } catch (Exception $e) {}
             $success = true;
@@ -60,10 +60,10 @@ $app->post('/contact-us', function ($request, $response, $args) {
 });
 
 foreach (glob(__DIR__.'/*_controller.php') as $controller) {
-    $cname = basename($controller, '.php');
-    if (!empty($cname)) {
-        require_once $controller;
-    }
+	$cname = basename($controller, '.php');
+	if (!empty($cname)) {
+		require_once $controller;
+	}
 }
 
 $app->group('/contact', function () use ($user) {

@@ -9563,9 +9563,6 @@ class SimpleModel
 	 */
 	public function loadBean( OODBBean $bean )
 	{
-	    if (empty($bean)) {
-	        $bean = new \stdClass();
-        }
 		$this->bean = $bean;
 	}
 
@@ -9582,9 +9579,6 @@ class SimpleModel
 	 */
 	public function __get( $prop )
 	{
-        if (empty($this->bean)) {
-            $this->bean = new \stdClass();
-        }
 		return $this->bean->$prop;
 	}
 
@@ -9599,9 +9593,6 @@ class SimpleModel
 	 */
 	public function __set( $prop, $value )
 	{
-        if (empty($this->bean)) {
-            $this->bean = new \stdClass();
-        }
 		$this->bean->$prop = $value;
 	}
 

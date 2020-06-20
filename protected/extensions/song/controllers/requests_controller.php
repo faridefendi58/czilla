@@ -17,13 +17,15 @@ class RequestsController extends BaseController
         $app->map(['GET', 'POST'], '/update/[{id}]', [$this, 'update']);
         $app->map(['POST'], '/delete/[{id}]', [$this, 'delete']);
         $app->map(['GET'], '/search', [$this, 'search']);
+        $app->map(['POST'], '/mark-as-checked/[{id}]', [$this, 'mark_as_checked']);
+        $app->map(['POST'], '/delete-search/[{id}]', [$this, 'delete_search']);
     }
 
     public function accessRules()
     {
         return [
             ['allow',
-                'actions' => ['view', 'update', 'delete', 'search'],
+                'actions' => ['view', 'update', 'delete', 'search', 'mark-as-checked', 'delete-search'],
                 'users'=> ['@'],
             ],
             ['deny',
@@ -111,7 +113,8 @@ class RequestsController extends BaseController
             return $this->notAllowedAction();
         }
 
-        $model = new \Model\VisitorModel();
+        //$model = new \Model\VisitorModel();
+        $model = new \ExtensionsModel\SongSearchModel();
         $params = $request->getParams();
 
         $params['date_from'] = date("Y-m-01");
@@ -124,17 +127,68 @@ class RequestsController extends BaseController
             $params['date_to'] = date("Y-m-d", $params['end']/1000);
         }
 
-        $data = [
+        /*$data = [
             'site_url' => $this->_settings['params']['site_url'],
             'date_from' => $params['date_from'],
             'date_to' => $params['date_to'],
             ];
-        $rows = $model->getFrequentlySearch($data);
+        $rows = $model->getFrequentlySearch($data);*/
+        if (!isset($params['status'])) {
+            $params['status'] = 0;
+        }
+        $params['limit'] = 1000;
+        $rows = $model->getItems($params);
 
         return $this->_container->module->render($response, 'songs/request_search.html', [
             'model' => $model,
             'rows' => $rows,
             'params' => $params
         ]);
+    }
+
+    public function mark_as_checked($request, $response, $args)
+    {
+        $isAllowed = $this->isAllowed($request, $response);
+        if ($isAllowed instanceof \Slim\Http\Response)
+            return $isAllowed;
+
+        if(!$isAllowed){
+            return $this->notAllowedAction();
+        }
+
+        if (!isset($args['id'])) {
+            return false;
+        }
+
+        $model = \ExtensionsModel\SongSearchModel::model()->findByPk($args['id']);
+        $model->status = 1;
+        $model->checked_at = date('c');
+        $update = \ExtensionsModel\SongSearchModel::model()->update($model);
+        if ($update) {
+            $message = 'Your data is successfully updated.';
+            echo true;
+        }
+    }
+
+    public function delete_search($request, $response, $args)
+    {
+        $isAllowed = $this->isAllowed($request, $response);
+        if ($isAllowed instanceof \Slim\Http\Response)
+            return $isAllowed;
+
+        if(!$isAllowed){
+            return $this->notAllowedAction();
+        }
+
+        if (!isset($args['id'])) {
+            return false;
+        }
+
+        $model = \ExtensionsModel\SongSearchModel::model()->findByPk($args['id']);
+        $delete = \ExtensionsModel\SongSearchModel::model()->delete($model);
+        if ($delete) {
+            $message = 'Your data is successfully deleted.';
+            echo true;
+        }
     }
 }

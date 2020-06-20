@@ -36,6 +36,30 @@ $app->get('/search', function ($request, $response, $args) {
     $model = new \ExtensionsModel\SongModel();
     $params = $request->getParams();
 
+    // track search keyword
+    if (!empty($params['q'])) {
+        $type = 'chord';
+        if (isset($params['type'])) {
+            $type = $params['type'];
+        }
+        $smodel = \ExtensionsModel\SongSearchModel::model()->findByAttributes(['keywords' => strtolower($params['q']), 'type' => $type]);
+        if (!$smodel instanceof \RedBeanPHP\OODBBean) {
+            $smodel = new \ExtensionsModel\SongSearchModel();
+            $smodel->keywords = strtolower($params['q']);
+            $smodel->type = $type;
+            $smodel->frequency = 1;
+            $smodel->created_at = date('c');
+            $smodel->updated_at = date('c');
+            $save = \ExtensionsModel\SongSearchModel::model()->save($smodel);
+        } else {
+            if ($smodel->status == 0) {
+                $smodel->frequency = $smodel->frequency + 1;
+                $smodel->updated_at = date('c');
+                $update = \ExtensionsModel\SongSearchModel::model()->update($smodel);
+            }
+        }
+    }
+
     return $this->view->render($response, 'chord_search.phtml', [
         'model' => $model,
         'params' => $params,

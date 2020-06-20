@@ -37,18 +37,27 @@ Daftar Lagu Sering Dicari - {{ App.params.site_name }}
                                     <thead>
                                     <tr>
                                         <th>id</th>
-                                        <th>Judul Lagu</th>
+                                        <th>Keyword</th>
                                         <th>Jumlah Pencarian</th>
                                         <th>Tanggal Terakhir Cari</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {% for i, row in rows %}
                                     <tr>
                                         <td>{{ i + 1 }}</td>
-                                        <td>{{ row.song_title }}</td>
-                                        <td>{{ row.counter }}</td>
-                                        <td>{{ row.created_at }}</td>
+                                        <td>{{ row.keywords }}</td>
+                                        <td>{{ row.frequency }}</td>
+                                        <td>{{ row.updated_at }}</td>
+                                        <td>
+                                            <a href="{{ 'song/requests/mark-as-checked' | link }}/{{ row.id }}" title="Mark as checked" onclick="return mark_as_checked(this);">
+                                                <i class="fa fa-check-square"></i>
+                                            </a>
+                                            <a href="{{ 'song/requests/delete-search' | link }}/{{ row.id }}" title="Remove Search Data" onclick="return hapus(this);">
+                                                <i class="fa fa-trash-o"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                     {% else %}
                                     <tr class="no-data">
@@ -110,6 +119,40 @@ Daftar Lagu Sering Dicari - {{ App.params.site_name }}
         var loc = window.location;
         var currentURL = loc.protocol + '//' + loc.host + loc.pathname;
         window.location.href = currentURL+'?start='+start+'&end='+end;
+    }
+    function mark_as_checked(data) {
+        if (confirm('Are you sure this data is already checked ?')) {
+            var $this =  $(data);
+            var url = $this.attr('href');
+            $.ajax({
+                'url': url,
+                'type':'post',
+                'dataType': 'json',
+                'success': function(data) {
+                    if (data) {
+                        $this.parent().parent().remove();
+                    }
+                }
+            });
+        }
+        return false;
+    }
+    function hapus(data) {
+        if (confirm('Are you sure to delete ?')) {
+            var $this =  $(data);
+            var url = $this.attr('href');
+            $.ajax({
+                'url': url,
+                'type':'post',
+                'dataType': 'json',
+                'success': function(data) {
+                    if (data) {
+                        $this.parent().parent().remove();
+                    }
+                }
+            });
+        }
+        return false;
     }
 </script>
 {% endblock %}

@@ -196,7 +196,6 @@ class ChordsController extends BaseController
             if ($model->status == \ExtensionsModel\SongModel::STATUS_PUBLISHED && empty($model->published_at)) {
                 $model->published_at = date('Y-m-d H:i:s');
             }
-            $model->created_at = date('Y-m-d H:i:s');
             $model->updated_at = date('Y-m-d H:i:s');
             $update = \ExtensionsModel\SongModel::model()->update($model);
             if ($update) {
@@ -1228,9 +1227,9 @@ class ChordsController extends BaseController
 
                 if(curl_exec($ch) === false) {
                     //echo 'Curl error: ' . curl_error($ch);
-					$html = file_get_html($url);
-	                $html->clear();
-    	            unset($html);
+                    $html = file_get_html($url);
+                    $html->clear();
+                    unset($html);
                 } else {
                     $success = $success + 1;
                 }
