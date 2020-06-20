@@ -267,7 +267,7 @@ html.no-pointerevents.no-touchevents .list-agency:hover .list-agency-right,html.
 .head4 nav, .head4 #navbar {background-color: #242f3d;}
 .head4 .nav > li > a {color: #fff;}
 .head4 section.blog-short-title {
-    background: url(../images/short-image-bg.jpg) center repeat-x #fff;
+    background: url(../images/short-image-bg.webp) center repeat-x #fff;
 }
 .no-margin{margin:0px !important;}
 .no-padding{margin:0px !important;}

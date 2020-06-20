@@ -98,6 +98,21 @@ function transpose(basic_tone,new_basic_tone) {
             suffix = chord.substr(1);
             if (chord.charAt(1) == '#') {
                 suffix = chord.substr(2);
+            } else if (chord.charAt(1) == '/') {
+                /** for ex : D/F# */
+                suffix = chord.substr(2);
+                if (suffix.length > 1 && suffix.charAt(1) == '#') {
+                    var index2 = bobots.indexOf(suffix.charAt(0)+suffix.charAt(1));
+                    var selisih2 = index2 - transpose_val*2;
+                    if (selisih2 < 0) {
+                        selisih2 = bobots.length + selisih2;
+                    } else {
+                        if (selisih2 > 11) {
+                            selisih2 = selisih2 - 12;
+                        }
+                    }
+                    suffix = '/'+ bobots[selisih2];
+                }
             }
         } else if (chord.length == 2) {
             if (chord.charAt(1) != '#') {
