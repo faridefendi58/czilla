@@ -269,6 +269,9 @@ class SongModel extends \Model\BaseModel
         } else {
             $shorten_file = $_SERVER['DOCUMENT_ROOT'].'/protected/data/songs/shortens/'. $data['permalink'] .'.json';
             if (file_exists($shorten_file)) {
+                if (array_key_exists('path', $data) && $data['path'] == 'amp') {
+                    return 'amp/'. $data['permalink'];
+                }
                 return $data['permalink'];
             }
             $url = $data['permalink'];
@@ -669,6 +672,35 @@ class SongModel extends \Model\BaseModel
         $content = str_replace(array( '{', '}' ), array('<a href="#" class="chord">', '</a>'), $content);
 
         return $content;
+    }
+
+    public function reformatChordContentAMP($content) { //22 agt 20 amp issue
+        $content = str_replace(array( '[]' ), array('<sup class="space ml3">&nbsp;</sup>'), $content);
+        $content = str_replace(array( '[', ']' ), array('<sup><span class="chord">', '</span></sup>'), $content);
+        $content = str_replace(array( '{', '}' ), array('<span class="chord mr1">', '</span>'), $content);
+        $htmdom = new \Components\SimpleHtmlDom();
+        $html = $htmdom->str_get_html($content);
+        $keys = [];
+        foreach($html->find('span.chord') as $element) {
+            $_key = $element->innertext;
+            if (!empty($_key) && !array_key_exists($_key, $keys)) {
+                $_key_val = $_key;
+                if (strpos($_key_val, '#') !== false) {
+                    $_key_val = str_replace(['#'], ['is'], $_key_val);
+                }
+                if (strpos($_key_val, '/') !== false) {
+                    $_key_val = str_replace(['/'], ['-'], $_key_val);
+                }
+                $keys[$_key] = $_key_val;
+            }
+        }
+
+        $result = [
+            'content' => $content,
+            'keys' => $keys
+        ];
+
+        return $result;
     }
 
     public function getLyricFormatFromChord($content) {

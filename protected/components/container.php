@@ -15,6 +15,9 @@ require __DIR__ . '/tool.php';
 // Static
 require __DIR__ . '/static.php';
 
+// HtmlDom
+require __DIR__ . '/simple_html_dom.php';
+
 //trailling slash
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;

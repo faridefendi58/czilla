@@ -262,6 +262,32 @@ $app->get('/lyric[/{artist}[/{title}]]', function ($request, $response, $args) {
     return $this->view->render($response, '404.phtml');
 });
 
+$app->get('/amp[/{artist}[/{slug}]]', function ($request, $response, $args) use ($user) {
+    $data = null; $model = new \ExtensionsModel\SongModel();
+    if (array_key_exists('artist', $args)) {
+        $dir = 'protected/data/songs/';
+        if (array_key_exists('slug', $args)) {
+            $file = $dir. $args['artist'].'_'.$args['slug'].'.json';
+            if(file_exists($file)) {
+                $data = file_get_contents($file);
+                if (!empty($data)) {
+                    $data = json_decode($data, true);
+                }
+            }
+        } else {
+            $file = $dir. '/shortens/'.$args['artist'].'.json';
+            if(file_exists($file)) {
+                $data = file_get_contents($file);
+                if (!empty($data)) {
+                    $data = json_decode($data, true);
+                }
+            }
+        }
+    }
+
+    return $this->view->render($response, 'song_chord_amp.phtml', ['data' => $data, 'msong' => $model]);
+});
+
 foreach (glob(__DIR__.'/*_controller.php') as $controller) {
 	$cname = basename($controller, '.php');
 	if (!empty($cname)) {
