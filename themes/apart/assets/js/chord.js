@@ -100,10 +100,13 @@ function transpose(basic_tone,new_basic_tone) {
                 suffix = chord.substr(2);
             } else if (chord.charAt(1) == '/') {
                 /** for ex : D/F# */
-                suffix = chord.substr(2);
-                if (suffix.length > 1 && suffix.charAt(1) == '#') {
-                    var index2 = bobots.indexOf(suffix.charAt(0)+suffix.charAt(1));
-                    var selisih2 = index2 - transpose_val*2;
+                var _suffix = chord.substr(2);
+                if (_suffix.length >= 1) {
+                    var index2 = bobots.indexOf(_suffix.charAt(0));
+                    if (_suffix.charAt(1) == '#') {
+                        var index2 = bobots.indexOf(_suffix.charAt(0) + _suffix.charAt(1));
+                    }
+                    var selisih2 = index2 - transpose_val * 2;
                     if (selisih2 < 0) {
                         selisih2 = bobots.length + selisih2;
                     } else {
@@ -111,7 +114,25 @@ function transpose(basic_tone,new_basic_tone) {
                             selisih2 = selisih2 - 12;
                         }
                     }
-                    suffix = '/'+ bobots[selisih2];
+                    suffix = '/' + bobots[selisih2];
+                }
+            } else if (chord.charAt(2) == '/') {
+                /** for ex : Cm/E */
+                var _suffix = chord.substr(3);
+                if (_suffix.length >= 1) {
+                    var index2 = bobots.indexOf(_suffix.charAt(0));
+                    if (_suffix.charAt(1) == '#') {
+                        var index2 = bobots.indexOf(_suffix.charAt(0) + _suffix.charAt(1));
+                    }
+                    var selisih2 = index2 - transpose_val * 2;
+                    if (selisih2 < 0) {
+                        selisih2 = bobots.length + selisih2;
+                    } else {
+                        if (selisih2 > 11) {
+                            selisih2 = selisih2 - 12;
+                        }
+                    }
+                    suffix = chord.charAt(1)+ '/' + bobots[selisih2];
                 }
             }
         } else if (chord.length == 2) {

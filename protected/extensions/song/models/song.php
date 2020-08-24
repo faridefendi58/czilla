@@ -152,7 +152,7 @@ class SongModel extends \Model\BaseModel
         ab.album_name, ab.release_year, ab.label_name,
         l.permalink AS lyric_permalink, l.meta_title AS lyric_meta_title, l.meta_keyword AS lyric_meta_keyword, l.meta_description AS lyric_meta_description,      
         c.permalink AS chord_permalink, c.meta_title AS chord_meta_title, c.meta_keyword AS chord_meta_keyword, c.meta_description AS chord_meta_description,
-        m.mp3_url, m.video_url    
+        m.mp3_url, m.video_url, c.shorten_link    
         FROM {tablePrefix}ext_song t 
         LEFT JOIN {tablePrefix}ext_song_artists s ON s.id = t.artist_id 
         LEFT JOIN {tablePrefix}ext_song_abjads a ON a.id = s.abjad_id 
@@ -217,7 +217,7 @@ class SongModel extends \Model\BaseModel
         c.url AS chord_url, c.result AS chord, c.status AS chord_status, c.section AS chord_section,
         ab.album_name, ab.release_year, ab.label_name,
         l.permalink AS lyric_permalink, l.meta_title AS lyric_meta_title, l.meta_keyword AS lyric_meta_keyword, l.meta_description AS lyric_meta_description, l.featured, l.top_track,     
-        c.permalink AS chord_permalink, c.meta_title AS chord_meta_title, c.meta_keyword AS chord_meta_keyword, c.meta_description AS chord_meta_description, c.featured, c.top_track, c.tags      
+        c.permalink AS chord_permalink, c.meta_title AS chord_meta_title, c.meta_keyword AS chord_meta_keyword, c.meta_description AS chord_meta_description, c.featured, c.top_track, c.tags, c.shorten_link      
         FROM {tablePrefix}ext_song t 
         LEFT JOIN {tablePrefix}ext_song_artists s ON s.id = t.artist_id 
         LEFT JOIN {tablePrefix}ext_song_abjads a ON a.id = s.abjad_id 
@@ -267,6 +267,10 @@ class SongModel extends \Model\BaseModel
             $url = $data['title'];
             $song = self::getSong($data['title']);
         } else {
+            $shorten_file = $_SERVER['DOCUMENT_ROOT'].'/protected/data/songs/shortens/'. $data['permalink'] .'.json';
+            if (file_exists($shorten_file)) {
+                return $data['permalink'];
+            }
             $url = $data['permalink'];
             $song = null;
         }

@@ -44,7 +44,7 @@ class DefaultController extends BaseController
                         if ($ga->verifyCode($tfa_model->secret_code, $_POST['LoginForm']['auth_code'])) {
                             $login = $this->_user->login($model, $_POST['LoginForm']['remember']);
                             if ($login){
-                                setcookie( 'auth_code', $_POST['LoginForm']['auth_code'], strtotime("+1 week", time()), "/");
+                                setcookie( 'auth_code', $_POST['LoginForm']['auth_code'], strtotime("+1 month", time()), "/");
                                 if (!empty($_POST['LoginForm']['r'])) {
                                     return $response->withRedirect($_POST['LoginForm']['r']);
                                 } else {

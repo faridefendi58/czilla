@@ -291,6 +291,56 @@ class ImagesController extends BaseController
             ]);
         }
 
+		if (isset($_POST['image']) && isset($_POST['dest_file_name'])) {
+            $settings = $this->_settings;
+            $data = $_POST['image'];
+            if (preg_match('/^data:image\/(\w+);base64,/', $data, $type)) {
+                $data = substr($data, strpos($data, ',') + 1);
+                $type = strtolower($type[1]); // jpg, png, gif
+
+                if (!in_array($type, [ 'jpg', 'jpeg', 'gif', 'png' ])) {
+                    $result['response'] = 'invalid image type';
+                }
+
+                $data = base64_decode($data);
+
+                if ($data === false) {
+                    $result['response'] = 'base64_decode failed';
+                }
+            } else {
+                throw new \Exception('did not match data URI with image data');
+            }
+
+            $artist_slug = \ExtensionsModel\PostModel::createSlug($_POST['dest_file_name']);
+            $tmp_file_name = "/uploads/images/tmps/". uniqid() .".". $type;
+            file_put_contents($settings['basePath'] .'/..'. $tmp_file_name, $data);
+
+            $file_name = "/uploads/songs/". $artist_slug.'.webp';
+
+            if ($type == 'jpeg' || $type == 'jpg')
+                $image = imagecreatefromjpeg($_POST['image']);
+            elseif ($type == 'gif')
+                $image = imagecreatefromgif($_POST['image']);
+            elseif ($type == 'png')
+                $image = imagecreatefrompng($_POST['image']);
+
+            try {
+                list($width, $height) = getimagesize($settings['basePath'] .'/..'. $tmp_file_name);
+                $newwidth = 256; $newheight = 256;
+                $thumb = imagecreatetruecolor($newwidth, $newheight);
+                imagecopyresized($thumb, $image, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+
+                imagewebp($thumb, $settings['basePath'] . '/..' . $file_name, 100);
+                imagedestroy($thumb);
+                unlink($settings['basePath'] .'/..'. $tmp_file_name);
+            } catch (\Exception $e){var_dump($e->getMessage());exit;}
+
+            $result = [];
+            $result['status'] = 'success';
+            $result['response'] =  $settings['params']['site_url'] .''. $file_name;
+            return $response->withJson($result);
+        }
+
         return $this->_container->module->render($response, 'songs/image_upload_artists.html', [
             'message' => ($message) ? $message : null,
             'success' => $success

@@ -12,17 +12,18 @@ Perbarui Chord - {{ App.params.site_name }}
 <div id="main_wrapper">
     <div class="page_bar clearfix">
         <div class="row">
-            <div class="col-sm-8">
+            <div class="col-sm-6">
                 <h1 class="page_title">{{ song.title }}</h1>
                 <p class="text-muted">Ubah postingan</p>
             </div>
-            <div class="col-sm-4 text-right">
+            <div class="col-sm-6 text-right">
+                <a class="btn btn-default" href="{{ 'song/images/upload-artist' | link }}?artist_name={{ song.artist_name | lower }}" target="_blank">Upload Photo</a>
                 <a class="btn btn-default" href="{{ 'song/chords/view' | link }}">Daftar Postingan</a>
                 {% set perm = song.slug %}
                 {% if song.chord_permalink %}
                     {% set perm = song.chord_permalink %}
                 {% endif %}
-                <a class="btn btn-default" href="{{ 'chord' | link }}/{{ song.artist_slug }}/{{ perm }}" target="_newtab">Lihat Postingan</a>
+                <a class="btn btn-default" href="{% if song.shorten_link %}{{ perm | link }}{% else %}{{ 'chord' | link }}/{{ song.artist_slug }}/{{ perm }}{% endif %}" target="_newtab">Lihat Postingan</a>
             </div>
         </div>
     </div>

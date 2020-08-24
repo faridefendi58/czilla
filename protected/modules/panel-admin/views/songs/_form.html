@@ -145,6 +145,11 @@
                            placeholder="Pisahkan spasi dengan tanda '-'. Ex: chord-ada-band-cinta-ini-membunuhku">
                 </div>
                 <div class="form-group col-sm-12">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="Songs[shorten_link]" {% if song.shorten_link %}checked="checked"{% endif %}> Use Short Url (Be carefull, uncheck will make a broken link)
+                    </label>
+                </div>
+                <div class="form-group col-sm-12">
                     <label>Meta Title</label>
                     {% if not use_for_chord %}
                         {% set song_meta_title = song.lyric_meta_title %}

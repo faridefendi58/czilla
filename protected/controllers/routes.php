@@ -32,6 +32,27 @@ $app->get('/[{name}]', function ($request, $response, $args) {
         if (in_array( 'song', $exts )) {
             $msong = new \ExtensionsModel\SongModel();
         }
+
+        $shorten_file = $settings['basePath'].'/data/songs/shortens/'.$args['name'].'.json';
+        if (file_exists($shorten_file)) {
+            $shorten_content = file_get_contents($shorten_file);
+            if (!empty($shorten_content)) {
+                $shorten_content = json_decode($shorten_content, true);
+                if (array_key_exists('shorten_link', $shorten_content) && $shorten_content['shorten_link'] > 0) {
+                    $data = $shorten_content;
+                    $msong = new \ExtensionsModel\SongModel();
+                    // save the counter
+                    $crmodel = new \ExtensionsModel\SongCordRefferenceModel();
+                    $record = $crmodel->recordVisit($data['title'], $data['id']);
+
+                    return $this->view->render($response, 'song_chord.phtml', [
+                        'data' => $data,
+                        'msong' => $msong
+                    ]);
+                }
+            }
+        }
+
         return $this->view->render($response, '404.phtml', [
             'msong' => $msong
         ]);

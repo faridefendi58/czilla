@@ -218,6 +218,12 @@ class ChordsController extends BaseController
                     $model2->permalink = $_POST['Songs']['permalink'];
                 }
 
+                if (!empty($_POST['Songs']['shorten_link'])) {
+                    $model2->shorten_link = 1;
+                } else {
+                    $model2->shorten_link = 0;
+                }
+
                 if (isset($_POST['Songs']['content']) && !empty($_POST['Songs']['content'])) {
                     $model2->result = $_POST['Songs']['content'];
                 }
@@ -1244,8 +1250,16 @@ class ChordsController extends BaseController
 
         // also update cached song
         if (array_key_exists('artist_slug', $hook_params) && array_key_exists('chord_permalink', $hook_params)) {
-            $dir = 'protected/data/songs/';
-            $file = $dir. $hook_params['artist_slug'].'_'.$hook_params['chord_permalink'].'.json';
+            if (array_key_exists('shorten_link', $hook_params) && $hook_params['shorten_link'] > 0) {
+                $dir = 'protected/data/songs/shortens/';
+                $file = $dir . $hook_params['chord_permalink'] . '.json';
+            } else {
+                $dir = 'protected/data/songs/';
+                $file = $dir . $hook_params['artist_slug'] . '_' . $hook_params['chord_permalink'] . '.json';
+                if (file_exists($dir. '/shortens/'. $hook_params['chord_permalink'] . '.json')) {
+                    unlink($dir. '/shortens/'. $hook_params['chord_permalink'] . '.json');
+                }
+            }
             if(!file_exists($file)) {
                 $new_file = fopen($file, "w");
                 file_put_contents($file, json_encode($hook_params));
